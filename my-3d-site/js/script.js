@@ -4,35 +4,38 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const loader = new THREE.GLTFLoader();
-loader.load('path/to/your/russian-doll-model.glb', function(gltf) {
-    const model = gltf.scene;
-    model.traverse(function(child) {
-        if (child.isMesh) {
-            child.material.color.set(0x0000ff); // Set the color to blue
-        }
-    });
-    scene.add(model);
-    model.rotation.y = Math.PI; // Initial rotation
-});
+// Body: CapsuleGeometry for Russian doll shape
+const bodyGeometry = new THREE.CapsuleGeometry(0.5, 1.5, 4, 8);
+const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+scene.add(body);
+
+// Head: SphereGeometry on top of body
+const headGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+const headMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+const head = new THREE.Mesh(headGeometry, headMaterial);
+head.position.set(0, 1.2, 0); // Position on top of body
+scene.add(head);
+
+// Eyes: Two small white spheres on the front of the head
+const eyeGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+leftEye.position.set(-0.15, 1.3, 0.35); // Front left
+scene.add(leftEye);
+const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+rightEye.position.set(0.15, 1.3, 0.35); // Front right
+scene.add(rightEye);
 
 camera.position.z = 5;
 
-let rotationSpeed = 0.01;
-let rotateDirection = 1;
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
 
 function animate() {
     requestAnimationFrame(animate);
-    scene.rotation.y += rotationSpeed * rotateDirection;
+    controls.update();
     renderer.render(scene, camera);
 }
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'ArrowLeft') {
-        rotateDirection = -1; // Rotate left
-    } else if (event.key === 'ArrowRight') {
-        rotateDirection = 1; // Rotate right
-    }
-});
-
 animate();
